@@ -1,0 +1,54 @@
+#!/bin/sh
+# Script de récupération d'un dossier web apache cree par Anthony le 01/04/2019 derniere modification par Anthony le 20/10/2021 
+#
+# rsync -avz --progress --stats --human-readable -e "ssh" root@192.168.101.39:/var/www/forum.bdkapp.com/ /var/www/bdkapp/bdkapp-forum/
+#
+#usage : copie_site_apache_vers_autre_serveur nomdudossier nouveaunom user racinesite
+#
+
+# Variables
+nb_args=4
+adr_serveur_source=192.168.101.39
+usr_serveur_source=root
+usr_serveur_destination=epsimin
+chemin_www_source=/var/www
+chemin_www_destination=/var/www
+chemin_apache_available=/etc/apache2/sites-available
+chemin_apache_enabled=/etc/apache2/sites-enabled
+groupapache=www-data
+groupepsilog=epsilog
+
+if [ "$#" -ne $nb_args ];
+    then
+        echo "Vous devez saisir $nb_args arguments et vous en avez saisi $# ..."
+        echo La syntaxe est : recup_apache_site_dossier nomdudossier nouveaunom user racinesite
+        exit 1
+    else
+# Je vérifie que l'utilisateur passé en paramètre existe
+	id -u "$3" > /dev/null 2>&1
+	if [ "$?" != "0" ];
+	   then
+		echo "Utilisateur $3 inexistant sur ce serveur. Abandon du script !" 
+		exit 1
+	   else
+# Création du dossier et attribution droits
+        	mkdir $chemin_www_destination/$2
+        	chown $groupapache:$groupepsilog $chemin_www_destination/$2
+		chmod g+w $chemin_www_destination/$2
+# Récupération contenu dossier source
+		rsync -avz --progress --stats --human-readable -e "ssh" $usr_serveur_source@$adr_serveur_source:$chemin_www_source/$1/ $chemin_www_destination/$2/
+# Fabrication du fichier de conf apache dans sites-available
+# 1 copie du fichier exemple
+		cp -prv $chemin_apache_available/000-default.conf $chemin_apache_available/$2.conf
+#		cp -prv $chemin_apache_available/default-ssl.conf $chemin_apache_available/ssl.$2.conf
+# 2 modif conf du fichier exemple 
+		sed -i -e "s/default/$2/g" $chemin_apache_available/$2.conf
+		sed -i -e "s/racinesite/$4/g" $chemin_apache_available/$2.conf
+#		sed -i -e "s/chaine1/chaine2/g" $chemin_apache_available/ssl.$2.conf
+# 3 creation du lien symbolique dans sites-enabled
+		ln -sfn $chemin_apache_available/$2.conf $chemin_apache_enabled/$2.conf
+# 4 reload config apache
+		apache2ctl graceful
+        	exit 0
+	fi
+fi

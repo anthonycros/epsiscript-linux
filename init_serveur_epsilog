@@ -6,15 +6,43 @@
 #usage : init_serveur_epsilog
 #
 # Variables
-#adr_serveur_source=192.168.0.37
-adr_serveur_source=telecharge2.vega5.fr
-#usr_serveur_source=anthony
-usr_serveur_source=root
-usr_serveur_destination=epsimin
-chemin_www_source=/var/www
-chemin_www_destination=/var/www
+
+usr_epsilog=epsimin
+chemin_www=/var/www
 groupapache=www-data
 groupepsilog=epsilog
+
+# Installations de paquets
+# fail2ban
+# automatisation maj debian
+# certbot / letsencrypt
+# snmp ?? centreon ??
+
+-	apt-get update
+-	apt-get upgrade
+-	apt-get install open-vm-tools
+-	apt-get install proftpd
+-	apt-get install fail2ban
+-	reconfigurer le fichier /etc/network/interfaces
+apt-get install apache2
+apt-get install mysql-server
+mysql_secure_installation
+apt-get install php5 php-pear php5-mysql
+service apache2 restart
+
+gestion envoiexe de michel
+
+-	apt-get install awstats
+-	a2enmod 
+
+rsync pour copie de fichiers entre serveurs
+
+
+
+
+# Récupérations de config types EPSILOG
+# fail2ban
+# proftpd
 
 # ajout de l'utilisateur destination au groupe EPSILOG
 usermod –G $groupepsilog $usr_serveur_destination

@@ -48,5 +48,7 @@ if [ "$#" -ne $nb_args ];
                 exit 0
 # 4 todo lancer certbot
 
+# 5 todo poser question si bdd nécessaire et si oui créer la BDD
+
 fi
 
