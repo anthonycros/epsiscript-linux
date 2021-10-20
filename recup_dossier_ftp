@@ -1,0 +1,33 @@
+#!/bin/sh
+# Script de récupération d'un dossier FTP de nos serveurs de téléchargement
+# cree par Anthony le 22/12/2014
+# derniere modification par Anthony le 20/11/2021
+#
+#usage : recup_dossier_ftp nomdudossier
+#
+
+# Variables
+#adr_serveur_source=192.168.0.37
+adr_serveur_source=telecharge2.vega5.fr
+#usr_serveur_source=anthony
+usr_serveur_source=root
+usr_serveur_destination=epsimin
+chemin_www_source=/var/www
+chemin_www_destination=/var/www
+groupapache=www-data
+groupepsilog=epsilog
+
+if [$1 == ""]
+    then
+        echo Vous devez saisir un nom de dossier à récupérer...
+        echo La syntaxe est : recup_dossier_ftp nomdudossier
+        exit 1
+    else
+# Création du dossier
+        mkdir $chemin_www_destination/$1
+        chown $groupapache:$groupepsilog $chemin_www_destination/$1
+	chmod g+w $chemin_www_destination/$1
+        scp -prv $usr_serveur_source@$adr_serveur_source:$chemin_www_source/$1/* $chemin_www_destination/$1
+        chown -R $usr_serveur_destination:$usr_serveur_destination $chemin_www_destination/$1/*
+        exit 0
+fi

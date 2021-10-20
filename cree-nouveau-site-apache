@@ -1,0 +1,52 @@
+#!/bin/sh
+# Script de création d'un nouveau site apache
+# crée par Anthony le 01/04/2019 derniere modification par Anthony le 20/10/2021
+#
+# Crée le dossier dans /var/www, le user associé, les droits, le vhost apache
+#
+# usage : cree-nouveau-site-apache nomdossier nomsiteweb
+# Exemple : cree-nouveau-site-apache dossier-site exemple.com
+#
+
+# Variables
+nb_args=2
+chemin_www=/var/www
+chemin_apache_available=/etc/apache2/sites-available
+chemin_apache_enabled=/etc/apache2/sites-enabled
+groupeapache=www-data
+
+# Début du script
+if [ "$#" -ne $nb_args ];
+    then
+        echo "Vous devez saisir $nb_args argument(s) et vous en avez saisi $# ..."
+        echo La syntaxe est : cree-nouveau-site-apache nomdossier nomsiteweb
+	echo Exemple : cree-nouveau-site-apache dossier-site exemple.com
+        exit 1
+    else
+
+# Création du dossier
+	mkdir $chemin_www/$1
+# Création du user et choix du mdp
+	useradd -d $chemin_www/$1 -s /bin/false $1
+	passwd $1
+# Attribution des droits sur le dossier
+	chown $1:$groupeapache $chemin_www/$1
+
+# Fabrication du fichier de conf apache dans sites-available
+# 1 copie du fichier exemple
+                cp -prv $chemin_apache_available/vhost-type.conf $chemin_apache_available/$1.conf
+#               cp -prv $chemin_apache_available/default-ssl.conf $chemin_apache_available/ssl.$2.conf
+
+# 2 modif conf du fichier exemple
+                sed -i -e "s/dossier-site/$1/g" $chemin_apache_available/$1.conf
+                sed -i -e "s/exemple.com/$2/g" $chemin_apache_available/$1.conf
+#               sed -i -e "s/chaine1/chaine2/g" $chemin_apache_available/ssl.$1.conf
+# 3 creation du lien symbolique dans sites-enabled
+                ln -sfn $chemin_apache_available/$1.conf $chemin_apache_enabled/$1.conf
+# 4 reload config apache
+                apache2ctl graceful
+                exit 0
+# 4 todo lancer certbot
+
+fi
+

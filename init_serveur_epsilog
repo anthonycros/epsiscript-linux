@@ -1,0 +1,31 @@
+#!/bin/sh
+# Script d'initialisation pour un nouveau serveur EPSILOG
+# cree par Anthony le 22/12/2014
+# derniere modification par Anthony le 20/10/2021
+#
+#usage : init_serveur_epsilog
+#
+# Variables
+#adr_serveur_source=192.168.0.37
+adr_serveur_source=telecharge2.vega5.fr
+#usr_serveur_source=anthony
+usr_serveur_source=root
+usr_serveur_destination=epsimin
+chemin_www_source=/var/www
+chemin_www_destination=/var/www
+groupapache=www-data
+groupepsilog=epsilog
+
+# ajout de l'utilisateur destination au groupe EPSILOG
+usermod –G $groupepsilog $usr_serveur_destination
+
+# récupération de la config de proftpd et redémarrage du service
+cp /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.origine
+cp /etc/proftpd/proftpd.conf /home/epsimin/sauve/proftp.conf.origine
+scp -pv $usr_serveur_source@$adr_serveur_source:/etc/proftpd/proftpd.conf /etc/proftpd
+/etc/init.d/proftpd restart
+
+# récupération de la config de apache2 et redémarrage du service
+cp /etc/apache2/sites-enabled/000-default /home/epsimin/sauve/000-default.origine
+scp -pv $usr_serveur_source@$adr_serveur_source:/etc/apache2/sites-enabled/000-default /etc/apache2/sites-enabled
+/etc/init.d/apache2 restart
